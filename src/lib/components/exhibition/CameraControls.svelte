@@ -10,15 +10,13 @@
 	const forward = new Vector3();
 	const right = new Vector3();
 	const movement = new Vector3();
-	const speed = 2.8;
-	let { overlayOpen }: { overlayOpen: boolean } = $props();
+	const speed = 5;
 
 	let camera = $state<PerspectiveCamera>();
 	let yaw = $state(0);
 	let pitch = $state(0);
 
 	function handleKeydown(event: KeyboardEvent) {
-		if (overlayOpen) return;
 		const key = event.key.toLowerCase();
 
 		if (['w', 'a', 's', 'd', 'arrowup', 'arrowleft', 'arrowdown', 'arrowright'].includes(key)) {
@@ -32,7 +30,6 @@
 	}
 
 	function handleMousemove(event: MouseEvent) {
-		if (overlayOpen) return;
 		if (document.pointerLockElement !== dom) return;
 
 		yaw -= event.movementX * 0.0022;
@@ -41,7 +38,7 @@
 
 	onMount(() => {
 		const requestPointerLock = () => {
-			if (!overlayOpen) dom.requestPointerLock();
+			dom.requestPointerLock();
 		};
 		dom.addEventListener('click', requestPointerLock);
 
@@ -49,7 +46,7 @@
 	});
 
 	useTask((delta) => {
-		if (!camera || overlayOpen) return;
+		if (!camera) return;
 
 		euler.set(pitch, yaw, 0);
 		camera.quaternion.setFromEuler(euler);
@@ -80,4 +77,4 @@
 
 <svelte:window onkeydown={handleKeydown} onkeyup={handleKeyup} onmousemove={handleMousemove} />
 
-<T.PerspectiveCamera bind:ref={camera} makeDefault position={[0, 1.6, 13]} fov={68} />
+<T.PerspectiveCamera bind:ref={camera} makeDefault position={[0, 1.6, 0]} fov={68} />
