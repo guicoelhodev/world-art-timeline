@@ -20,12 +20,9 @@
 		onSelect?: (artwork: Artwork | null) => void;
 	} = $props();
 	let featuredArtwork = $derived(artworks[0]);
-	let remainingArtworks = $derived(artworks.slice(1));
-	let frontWallCount = $derived(Math.max(0, Math.ceil(remainingArtworks.length / 3) - 2));
-	let sideWallArtworks = $derived(remainingArtworks.slice(frontWallCount));
-	let frontWall = $derived(remainingArtworks.slice(0, frontWallCount));
-	let rightWall = $derived(sideWallArtworks.filter((_, index) => index % 2 === 0));
-	let leftWall = $derived(sideWallArtworks.filter((_, index) => index % 2 === 1));
+	let frontWall = $derived(artworks.slice(1, 4));
+	let rightWall = $derived(artworks.slice(4, 12));
+	let leftWall = $derived(artworks.slice(12, 20));
 	let focusedArtworkId = $state<string | null>(null);
 	let selectedArtworkId = $state<string | null>(null);
 
@@ -99,9 +96,9 @@
 				artwork={featuredArtwork}
 				position={[0, 0, 0.04]}
 				focused={focusedArtworkId === featuredArtwork.id}
-				maxWidth={11.2}
-				maxHeight={4.8}
-			{onSelect}
+				maxWidth={8}
+				maxHeight={3.6}
+				{onSelect}
 			/>
 		</T.Group>
 	{/if}
