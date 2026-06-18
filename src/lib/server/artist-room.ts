@@ -176,7 +176,7 @@ WHERE {
 }
 GROUP BY ?work ?workLabel ?workDescription ?sitelinks
 ORDER BY DESC(?sitelinks) ?workLabel
-LIMIT 32`;
+LIMIT 40`;
 
 	const params = new URLSearchParams({ query, format: 'json' });
 	const data = await fetchJson<SparqlResponse>(`https://query.wikidata.org/sparql?${params}`, {
@@ -245,7 +245,7 @@ LIMIT 32`;
 		} satisfies Artwork;
 	});
 
-	return artworks.filter((artwork) => artwork.image).slice(0, 16);
+	return artworks.filter((artwork) => artwork.image).slice(0, 20);
 }
 
 async function fetchWikipediaExtract(articleUrl: string): Promise<string | undefined> {
