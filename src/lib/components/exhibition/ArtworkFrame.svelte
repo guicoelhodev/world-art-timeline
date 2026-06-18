@@ -17,7 +17,7 @@
 		focused: boolean;
 		maxWidth?: number;
 		maxHeight?: number;
-		onSelect: (artwork: Artwork) => void;
+		onSelect?: (artwork: Artwork) => void;
 	} = $props();
 
 	let hover = $state(false);
@@ -52,9 +52,9 @@
 	{position}
 	scale={active ? 1.06 : 1}
 	userData={{ artworkId: artwork.id }}
-	onclick={(event: { stopPropagation: () => void }) => {
-		event.stopPropagation();
-		onSelect(artwork);
+	onclick={(e: { stopPropagation: () => void }) => {
+		e.stopPropagation();
+		onSelect?.(artwork);
 	}}
 	onpointerenter={() => (hover = true)}
 	onpointerleave={() => (hover = false)}
