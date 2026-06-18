@@ -7,14 +7,14 @@
 		artworks,
 		position,
 		rotation,
-		onSelect,
-		focusedArtworkId
+		focusedArtworkId,
+		onSelect
 	}: {
 		artworks: Artwork[];
 		position: [number, number, number];
 		rotation: [number, number, number];
-		onSelect: (artwork: Artwork) => void;
 		focusedArtworkId: string | null;
+		onSelect?: (artwork: Artwork) => void;
 	} = $props();
 
 	const gap = 0.75;
