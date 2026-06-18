@@ -10,14 +10,27 @@
 	const forward = new Vector3();
 	const right = new Vector3();
 	const movement = new Vector3();
-	const speed = 5;
 
 	let camera = $state<PerspectiveCamera>();
 	let yaw = $state(0);
 	let pitch = $state(0);
+	let ctrlPressed = $state(false);
+	let zoomFov = $state(68);
+
+	const normalFov = 68;
+	const zoomedFov = 25;
+	const zoomLerpSpeed = 10;
+	const normalSpeed = 5;
+	const zoomedSpeed = 1.5;
 
 	function handleKeydown(event: KeyboardEvent) {
 		const key = event.key.toLowerCase();
+
+		if (key === 'control') {
+			event.preventDefault();
+			ctrlPressed = true;
+			return;
+		}
 
 		if (['w', 'a', 's', 'd', 'arrowup', 'arrowleft', 'arrowdown', 'arrowright'].includes(key)) {
 			event.preventDefault();
@@ -26,7 +39,12 @@
 	}
 
 	function handleKeyup(event: KeyboardEvent) {
-		pressed.delete(event.key.toLowerCase());
+		const key = event.key.toLowerCase();
+		if (key === 'control') {
+			ctrlPressed = false;
+			return;
+		}
+		pressed.delete(key);
 	}
 
 	function handleMousemove(event: MouseEvent) {
@@ -50,6 +68,13 @@
 
 		euler.set(pitch, yaw, 0);
 		camera.quaternion.setFromEuler(euler);
+
+		const targetFov = ctrlPressed ? zoomedFov : normalFov;
+		zoomFov = MathUtils.lerp(zoomFov, targetFov, Math.min(zoomLerpSpeed * delta, 1));
+		camera.fov = zoomFov;
+		camera.updateProjectionMatrix();
+
+		const speed = ctrlPressed ? zoomedSpeed : normalSpeed;
 
 		movement.set(0, 0, 0);
 		if (pressed.has('w') || pressed.has('arrowup')) movement.z -= 1;
@@ -76,5 +101,4 @@
 </script>
 
 <svelte:window onkeydown={handleKeydown} onkeyup={handleKeyup} onmousemove={handleMousemove} />
-
 <T.PerspectiveCamera bind:ref={camera} makeDefault position={[0, 1.6, 0]} fov={68} />
