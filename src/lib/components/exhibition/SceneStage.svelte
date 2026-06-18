@@ -87,41 +87,41 @@
 <CameraControls />
 <T.AmbientLight intensity={0.7} />
 <T.HemisphereLight args={['#fff8ec', '#b8a37f', 1.1]} />
-<T.PointLight position={[0, 3.8, 0]} intensity={16} distance={13} color="#fff5df" />
-<T.PointLight position={[0, 2.8, -10]} intensity={7} distance={12} color="#fff8ec" />
-<T.PointLight position={[0, 2.8, 10]} intensity={7} distance={12} color="#fff8ec" />
+<T.PointLight position={[0, 4.5, 0]} intensity={16} distance={13} color="#fff5df" />
+<T.PointLight position={[0, 3, -10]} intensity={7} distance={12} color="#fff8ec" />
+<T.PointLight position={[0, 3, 10]} intensity={7} distance={12} color="#fff8ec" />
 
 <T.Group name={artist.id}>
 	<Room />
 	{#if featuredArtwork}
-		<T.Group position={[0, 2.75, -14.92]} rotation={[0, 0, 0]}>
+		<T.Group position={[0, 3, -14.92]} rotation={[0, 0, 0]}>
 			<ArtworkFrame
 				artwork={featuredArtwork}
 				position={[0, 0, 0.04]}
 				focused={focusedArtworkId === featuredArtwork.id}
 				maxWidth={11.2}
-				maxHeight={3.3}
+				maxHeight={4.8}
 			{onSelect}
 			/>
 		</T.Group>
 	{/if}
 	<GalleryWall
 		artworks={frontWall}
-		position={[0, 2.75, 14.92]}
+		position={[0, 3, 14.92]}
 		rotation={[0, Math.PI, 0]}
 		{focusedArtworkId}
 		{onSelect}
 	/>
 	<GalleryWall
 		artworks={rightWall}
-		position={[6.92, 2.75, 0]}
+		position={[5.92, 3, 0]}
 		rotation={[0, -Math.PI / 2, 0]}
 		{focusedArtworkId}
 		{onSelect}
 	/>
 	<GalleryWall
 		artworks={leftWall}
-		position={[-6.92, 2.75, 0]}
+		position={[-5.92, 3, 0]}
 		rotation={[0, Math.PI / 2, 0]}
 		{focusedArtworkId}
 		{onSelect}
