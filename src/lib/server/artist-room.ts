@@ -37,6 +37,10 @@ type SparqlBinding = {
 	image?: { value: string };
 	article?: { value: string };
 	sitelinks?: { value: string };
+	movementLabel?: { value: string };
+	materialLabel?: { value: string };
+	genreLabel?: { value: string };
+	locationLabel?: { value: string };
 };
 
 type SparqlResponse = {
@@ -141,6 +145,10 @@ SELECT ?work ?workLabel ?workDescription ?sitelinks
   (MIN(?inceptionValue) AS ?inception)
   (SAMPLE(?imageValue) AS ?image)
   (SAMPLE(?articleValue) AS ?article)
+  (SAMPLE(?movementLabel) AS ?movementLabel)
+  (SAMPLE(?materialLabel) AS ?materialLabel)
+  (SAMPLE(?genreLabel) AS ?genreLabel)
+  (SAMPLE(?locationLabel) AS ?locationLabel)
 WHERE {
   VALUES ?artist { wd:${wikidataId} }
   ?work wdt:P170 ?artist;
@@ -152,10 +160,18 @@ WHERE {
     ?articleValue schema:about ?work;
       schema:isPartOf <${articleHost}>.
   }
+  OPTIONAL { ?work wdt:P135 ?movement. }
+  OPTIONAL { ?work wdt:P186 ?material. }
+  OPTIONAL { ?work wdt:P136 ?genre. }
+  OPTIONAL { ?work wdt:P276 ?location. }
   SERVICE wikibase:label {
     bd:serviceParam wikibase:language "${labelLanguages}".
     ?work rdfs:label ?workLabel.
     ?work schema:description ?workDescription.
+    ?movement rdfs:label ?movementLabel.
+    ?material rdfs:label ?materialLabel.
+    ?genre rdfs:label ?genreLabel.
+    ?location rdfs:label ?locationLabel.
   }
 }
 GROUP BY ?work ?workLabel ?workDescription ?sitelinks
@@ -167,45 +183,110 @@ LIMIT 32`;
 		accept: 'application/sparql-results+json'
 	});
 	const bindings = data.results?.bindings ?? [];
-	const artworks = await Promise.all(
-		bindings.map(async (binding) => {
-			const id = binding.work.value.split('/').at(-1) ?? binding.work.value;
-			const imageFile = binding.image?.value
-				? fileNameFromCommonsUrl(binding.image.value)
-				: undefined;
-			const image = imageFile ? await fetchCommonsImage(imageFile, language) : undefined;
-			const title = binding.workLabel?.value ?? id;
-			const descriptionText = binding.workDescription?.value ?? '';
-			const sourceUrl = binding.article?.value ?? `https://www.wikidata.org/wiki/${id}`;
+	const artworkData = bindings.map((binding) => {
+		const id = binding.work.value.split('/').at(-1) ?? binding.work.value;
+		const imageFile = binding.image?.value
+			? fileNameFromCommonsUrl(binding.image.value)
+			: undefined;
+		const title = binding.workLabel?.value ?? id;
+		const descriptionText = binding.workDescription?.value ?? '';
+		const sourceUrl = binding.article?.value ?? `https://www.wikidata.org/wiki/${id}`;
+		const movement = binding.movementLabel?.value;
+		const material = binding.materialLabel?.value;
+		const genre = binding.genreLabel?.value;
+		const locationVal = binding.locationLabel?.value;
 
-			return {
-				id,
-				artistId: wikidataId,
-				title: {
-					en: title,
-					pt: title
-				},
-				year: yearFromWikidataDate(binding.inception?.value),
-				description: {
-					en: descriptionText,
-					pt: descriptionText
-				},
-				image,
-				sourceUrl: {
-					[language]: sourceUrl
-				},
-				wikidataUrl: `https://www.wikidata.org/wiki/${id}`,
-				license: image?.license,
-				credit: image?.credit,
-				dimensions: {
-					width: image?.width,
-					height: image?.height
-				}
-			} satisfies Artwork;
-		})
-	);
+		return { id, imageFile, title, descriptionText, sourceUrl, movement, material, genre, location: locationVal };
+	});
+
+	const [commonsResults, wikiExtracts] = await Promise.all([
+		Promise.all(
+			artworkData.map(({ imageFile }) =>
+				imageFile ? fetchCommonsImage(imageFile, language) : undefined
+			)
+		),
+		Promise.all(
+			artworkData.map(({ sourceUrl }) =>
+				sourceUrl.includes('wikipedia.org') ? fetchWikipediaExtract(sourceUrl) : undefined
+			)
+		)
+	]);
+
+	const artworks = artworkData.map((data, i) => {
+		const image = commonsResults[i];
+		return {
+			id: data.id,
+			artistId: wikidataId,
+			title: {
+				en: data.title,
+				pt: data.title
+			},
+			year: yearFromWikidataDate(bindings[i].inception?.value),
+			description: {
+				en: data.descriptionText,
+				pt: data.descriptionText
+			},
+			extract: wikiExtracts[i],
+			movement: data.movement ? { en: data.movement, pt: data.movement } : undefined,
+			medium: data.material ? { en: data.material, pt: data.material } : undefined,
+			genre: data.genre ? { en: data.genre, pt: data.genre } : undefined,
+			location: data.location ? { en: data.location, pt: data.location } : undefined,
+			image,
+			sourceUrl: {
+				[language]: data.sourceUrl
+			},
+			wikidataUrl: `https://www.wikidata.org/wiki/${data.id}`,
+			license: image?.license,
+			credit: image?.credit,
+			dimensions: {
+				width: image?.width,
+				height: image?.height
+			}
+		} satisfies Artwork;
+	});
 
 	return artworks.filter((artwork) => artwork.image).slice(0, 16);
+}
+
+async function fetchWikipediaExtract(articleUrl: string): Promise<string | undefined> {
+	try {
+		const url = new URL(articleUrl);
+		const title = url.pathname.split('/wiki/').at(-1);
+		if (!title) return undefined;
+
+		const lang = url.hostname.split('.')[0];
+		const params = new URLSearchParams({
+			action: 'query',
+			format: 'json',
+			formatversion: '2',
+			prop: 'extracts',
+			exintro: '1',
+			explaintext: '1',
+			titles: decodeURIComponent(title),
+			origin: '*'
+		});
+
+		type ExtractResponse = {
+			query?: { pages?: Array<{ extract?: string }> };
+		};
+
+		const data = await fetchJson<ExtractResponse>(
+			`https://${lang}.wikipedia.org/w/api.php?${params}`
+		);
+		const extract = data.query?.pages?.[0]?.extract;
+
+		return extract ? cleanExtract(extract) : undefined;
+	} catch {
+		return undefined;
+	}
+}
+
+function cleanExtract(text: string) {
+	return text
+		.replaceAll(/\n{3,}/g, '\n\n')
+		.replaceAll(/\(listen\)/gi, '')
+		.replaceAll(/\[\d+\]/g, '')
+		.trim();
 }
 
 async function fetchEntity(wikidataId: string) {
