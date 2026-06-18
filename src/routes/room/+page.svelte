@@ -2,38 +2,59 @@
 	import ArtworkOverlay from '$lib/components/artworks/ArtworkOverlay.svelte';
 	import ExhibitionScene from '$lib/components/exhibition/ExhibitionScene.svelte';
 	import type { Artwork } from '$lib/types/domain';
+	import { flushSync } from 'svelte';
 
 	let { data }: import('./$types').PageProps = $props();
 	let selectedArtwork = $state<Artwork | null>(null);
 
 	const localized = (value: Partial<Record<'en' | 'pt', string>>) =>
 		value[data.language] ?? value.en ?? value.pt ?? '';
+
+	function closeOverlay() {
+		const roomCanvas = document.querySelector<HTMLElement>('[data-room-canvas]');
+		selectedArtwork = null;
+		flushSync();
+
+		if (roomCanvas && document.pointerLockElement !== roomCanvas) {
+			roomCanvas.focus();
+			try {
+				void roomCanvas.requestPointerLock().catch(() => undefined);
+			} catch {
+				// Browser may still require clicking the room again.
+			}
+		}
+	}
 </script>
 
 <svelte:head>
 	<title>{localized(data.artist.name)} Exhibition Room</title>
 </svelte:head>
 
-<main class="min-h-screen bg-stone-950 text-stone-50">
-	<section
-		class="mx-auto flex min-h-screen w-full max-w-7xl flex-col gap-6 px-4 py-5 sm:px-6 lg:px-8"
-	>
-		<header
-			class="flex flex-col gap-4 border-b border-stone-700/70 pb-5 md:flex-row md:items-end md:justify-between"
-		>
+<main class="fixed inset-0 h-dvh overflow-hidden bg-stone-950 text-stone-50">
+	<ExhibitionScene
+		artist={data.artist}
+		artworks={data.artworks}
+		overlayOpen={Boolean(selectedArtwork)}
+		onSelect={(artwork) => (selectedArtwork = artwork)}
+	/>
+
+	<section class="pointer-events-none absolute inset-0 flex flex-col justify-between p-4 sm:p-6">
+		<header class="flex items-start justify-between gap-4">
 			<div class="max-w-3xl">
 				<p class="text-xs font-semibold uppercase tracking-[0.32em] text-amber-300">
 					3D artist room
 				</p>
-				<h1 class="mt-2 text-3xl font-semibold tracking-tight text-stone-50 md:text-5xl">
+				<h1
+					class="mt-2 text-3xl font-semibold tracking-tight text-stone-50 drop-shadow md:text-5xl"
+				>
 					{localized(data.artist.name)}
 				</h1>
-				<p class="mt-3 text-sm leading-6 text-stone-300 md:text-base">
+				<p class="mt-3 max-w-xl text-sm leading-6 text-stone-200 drop-shadow md:text-base">
 					{localized(data.artist.description)}
 				</p>
 			</div>
 
-			<div class="flex items-center gap-2 text-sm text-stone-300">
+			<div class="pointer-events-auto flex items-center gap-2 text-sm text-stone-200">
 				<form method="GET" action="/room">
 					<input type="hidden" name="author" value="Michelangelo" />
 					<input type="hidden" name="lang" value="en" />
@@ -54,32 +75,20 @@
 		</header>
 
 		<div
-			class="relative min-h-[620px] flex-1 overflow-hidden rounded-[2rem] border border-stone-700 bg-stone-900 shadow-2xl shadow-black/40"
+			class="max-w-sm rounded-2xl border border-white/10 bg-black/45 p-4 text-sm text-stone-200 backdrop-blur"
 		>
-			<ExhibitionScene
-				artist={data.artist}
-				artworks={data.artworks}
-				onSelect={(artwork) => (selectedArtwork = artwork)}
-			/>
-
-			<div
-				class="pointer-events-none absolute left-5 top-5 max-w-sm rounded-2xl border border-white/10 bg-black/45 p-4 text-sm text-stone-200 backdrop-blur"
-			>
-				<p class="font-medium text-stone-50">
-					{data.artworks.length} artworks loaded from public APIs
-				</p>
-				<p class="mt-1 text-stone-300">
-					Click a framed piece to open source, license and credit details.
-				</p>
-			</div>
+			<p class="font-medium text-stone-50">
+				{data.artworks.length} artworks loaded from public APIs
+			</p>
+			<p class="mt-1 text-stone-300">Click the room to look around. Use WASD or arrows to walk.</p>
 		</div>
 	</section>
+
+	<div
+		class="pointer-events-none absolute left-1/2 top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full border border-amber-200/80 shadow-[0_0_16px_rgba(251,191,36,0.55)]"
+	></div>
 </main>
 
 {#if selectedArtwork}
-	<ArtworkOverlay
-		artwork={selectedArtwork}
-		language={data.language}
-		onClose={() => (selectedArtwork = null)}
-	/>
+	<ArtworkOverlay artwork={selectedArtwork} language={data.language} onClose={closeOverlay} />
 {/if}
