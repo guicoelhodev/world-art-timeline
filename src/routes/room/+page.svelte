@@ -2,28 +2,12 @@
 	import ArtworkOverlay from '$lib/components/artworks/ArtworkOverlay.svelte';
 	import ExhibitionScene from '$lib/components/exhibition/ExhibitionScene.svelte';
 	import type { Artwork } from '$lib/types/domain';
-	import { flushSync } from 'svelte';
 
 	let { data }: import('./$types').PageProps = $props();
-	let selectedArtwork = $state<Artwork | null>(null);
+	let focusedArtwork = $state<Artwork | null>(null);
 
 	const localized = (value: Partial<Record<'en' | 'pt', string>>) =>
 		value[data.language] ?? value.en ?? value.pt ?? '';
-
-	function closeOverlay() {
-		const roomCanvas = document.querySelector<HTMLElement>('[data-room-canvas]');
-		selectedArtwork = null;
-		flushSync();
-
-		if (roomCanvas && document.pointerLockElement !== roomCanvas) {
-			roomCanvas.focus();
-			try {
-				void roomCanvas.requestPointerLock().catch(() => undefined);
-			} catch {
-				// Browser may still require clicking the room again.
-			}
-		}
-	}
 </script>
 
 <svelte:head>
@@ -34,8 +18,7 @@
 	<ExhibitionScene
 		artist={data.artist}
 		artworks={data.artworks}
-		overlayOpen={Boolean(selectedArtwork)}
-		onSelect={(artwork) => (selectedArtwork = artwork)}
+		onSelect={(artwork) => (focusedArtwork = artwork)}
 	/>
 
 	<section class="pointer-events-none absolute inset-0 flex flex-col justify-between p-4 sm:p-6">
@@ -80,7 +63,7 @@
 			<p class="font-medium text-stone-50">
 				{data.artworks.length} artworks loaded from public APIs
 			</p>
-			<p class="mt-1 text-stone-300">Click the room to look around. Use WASD or arrows to walk.</p>
+			<p class="mt-1 text-stone-300">Click the room to lock pointer. Use WASD or arrows to walk.</p>
 		</div>
 	</section>
 
@@ -89,6 +72,6 @@
 	></div>
 </main>
 
-{#if selectedArtwork}
-	<ArtworkOverlay artwork={selectedArtwork} language={data.language} onClose={closeOverlay} />
+{#if focusedArtwork}
+	<ArtworkOverlay artwork={focusedArtwork} language={data.language} />
 {/if}
