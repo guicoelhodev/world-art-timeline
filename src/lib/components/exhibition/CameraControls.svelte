@@ -69,7 +69,7 @@
 
 		camera.position.addScaledVector(forward, -movement.z * speed * delta);
 		camera.position.addScaledVector(right, movement.x * speed * delta);
-		camera.position.x = MathUtils.clamp(camera.position.x, -6.15, 6.15);
+		camera.position.x = MathUtils.clamp(camera.position.x, -5.8, 5.8);
 		camera.position.y = 1.6;
 		camera.position.z = MathUtils.clamp(camera.position.z, -14.15, 14.35);
 	});
