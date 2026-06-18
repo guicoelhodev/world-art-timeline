@@ -50,7 +50,6 @@
 
 <T.Group
 	{position}
-	scale={active ? 1.06 : 1}
 	userData={{ artworkId: artwork.id }}
 	onclick={(e: { stopPropagation: () => void }) => {
 		e.stopPropagation();
