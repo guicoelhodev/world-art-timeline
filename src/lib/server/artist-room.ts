@@ -36,6 +36,7 @@ type SparqlBinding = {
 	inception?: { value: string };
 	image?: { value: string };
 	article?: { value: string };
+	sitelinks?: { value: string };
 };
 
 type SparqlResponse = {
@@ -136,13 +137,19 @@ async function fetchArtworks(wikidataId: string, language: SupportedLanguage): P
 	const articleHost = language === 'pt' ? 'https://pt.wikipedia.org/' : 'https://en.wikipedia.org/';
 	const labelLanguages = language === 'pt' ? 'pt,en' : 'en,pt';
 	const query = `
-SELECT ?work ?workLabel ?workDescription ?inception ?image ?article WHERE {
+SELECT ?work ?workLabel ?workDescription ?sitelinks
+  (MIN(?inceptionValue) AS ?inception)
+  (SAMPLE(?imageValue) AS ?image)
+  (SAMPLE(?articleValue) AS ?article)
+WHERE {
   VALUES ?artist { wd:${wikidataId} }
-  ?work wdt:P170 ?artist.
-  OPTIONAL { ?work wdt:P571 ?inception. }
-  OPTIONAL { ?work wdt:P18 ?image. }
+  ?work wdt:P170 ?artist;
+    wdt:P18 ?imageValue;
+    wikibase:sitelinks ?sitelinks;
+    wdt:P31/wdt:P279* wd:Q3305213.
+  OPTIONAL { ?work wdt:P571 ?inceptionValue. }
   OPTIONAL {
-    ?article schema:about ?work;
+    ?articleValue schema:about ?work;
       schema:isPartOf <${articleHost}>.
   }
   SERVICE wikibase:label {
@@ -151,8 +158,9 @@ SELECT ?work ?workLabel ?workDescription ?inception ?image ?article WHERE {
     ?work schema:description ?workDescription.
   }
 }
-ORDER BY ?inception ?workLabel
-LIMIT 12`;
+GROUP BY ?work ?workLabel ?workDescription ?sitelinks
+ORDER BY DESC(?sitelinks) ?workLabel
+LIMIT 32`;
 
 	const params = new URLSearchParams({ query, format: 'json' });
 	const data = await fetchJson<SparqlResponse>(`https://query.wikidata.org/sparql?${params}`, {
@@ -197,7 +205,7 @@ LIMIT 12`;
 		})
 	);
 
-	return artworks.filter((artwork) => artwork.image).slice(0, 8);
+	return artworks.filter((artwork) => artwork.image).slice(0, 16);
 }
 
 async function fetchEntity(wikidataId: string) {
@@ -225,7 +233,7 @@ async function fetchCommonsImage(
 		prop: 'imageinfo',
 		titles: normalizedFile,
 		iiprop: 'url|size|mime|extmetadata',
-		iiurlwidth: '1200',
+		iiurlwidth: '2000',
 		iiextmetadatalanguage: language,
 		origin: '*'
 	});
