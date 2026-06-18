@@ -74,10 +74,10 @@
 		camera.position.addScaledVector(right, movement.x * speed * delta);
 		camera.position.x = MathUtils.clamp(camera.position.x, -6.15, 6.15);
 		camera.position.y = 1.6;
-		camera.position.z = MathUtils.clamp(camera.position.z, -6.15, 6.35);
+		camera.position.z = MathUtils.clamp(camera.position.z, -14.15, 14.35);
 	});
 </script>
 
 <svelte:window onkeydown={handleKeydown} onkeyup={handleKeyup} onmousemove={handleMousemove} />
 
-<T.PerspectiveCamera bind:ref={camera} makeDefault position={[0, 1.6, 5.8]} fov={68} />
+<T.PerspectiveCamera bind:ref={camera} makeDefault position={[0, 1.6, 13]} fov={68} />
