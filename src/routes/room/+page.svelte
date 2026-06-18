@@ -36,34 +36,20 @@
 					{localized(data.artist.description)}
 				</p>
 			</div>
-
-			<div class="pointer-events-auto flex items-center gap-2 text-sm text-stone-200">
-				<form method="GET" action="/room">
-					<input type="hidden" name="author" value="Michelangelo" />
-					<input type="hidden" name="lang" value="en" />
-					<button
-						class="rounded-full border border-stone-600 px-3 py-1.5 hover:border-amber-300 hover:text-amber-200"
-						type="submit">EN</button
-					>
-				</form>
-				<form method="GET" action="/room">
-					<input type="hidden" name="author" value="Michelangelo" />
-					<input type="hidden" name="lang" value="pt" />
-					<button
-						class="rounded-full border border-stone-600 px-3 py-1.5 hover:border-amber-300 hover:text-amber-200"
-						type="submit">PT</button
-					>
-				</form>
-			</div>
 		</header>
 
 		<div
 			class="max-w-sm rounded-2xl border border-white/10 bg-black/45 p-4 text-sm text-stone-200 backdrop-blur"
 		>
-			<p class="font-medium text-stone-50">
-				{data.artworks.length} artworks loaded from public APIs
-			</p>
-			<p class="mt-1 text-stone-300">Click the room to lock pointer. Use WASD or arrows to walk.</p>
+			<p class="font-medium text-stone-50">Controls</p>
+			<ul class="mt-1 space-y-0.5 text-stone-300">
+				<li>
+					<kbd class="text-stone-50">W A S D</kbd> or <kbd class="text-stone-50">Arrows</kbd> — walk
+				</li>
+				<li><kbd class="text-stone-50">Mouse</kbd> — look around</li>
+				<li><kbd class="text-stone-50">Ctrl</kbd> (hold) — zoom in</li>
+				<li><kbd class="text-stone-50">Click</kbd> artwork — details</li>
+			</ul>
 		</div>
 	</section>
 
@@ -73,5 +59,9 @@
 </main>
 
 {#if focusedArtwork}
-	<ArtworkOverlay artwork={focusedArtwork} language={data.language} artistName={localized(data.artist.name)} />
+	<ArtworkOverlay
+		artwork={focusedArtwork}
+		language={data.language}
+		artistName={localized(data.artist.name)}
+	/>
 {/if}
