@@ -7,15 +7,17 @@
 		artworks,
 		position,
 		rotation,
-		onSelect
+		onSelect,
+		focusedArtworkId
 	}: {
 		artworks: Artwork[];
 		position: [number, number, number];
 		rotation: [number, number, number];
 		onSelect: (artwork: Artwork) => void;
+		focusedArtworkId: string | null;
 	} = $props();
 
-	const spacing = 1.65;
+	const spacing = 3.8;
 </script>
 
 <T.Group {position} {rotation}>
@@ -23,6 +25,7 @@
 		<ArtworkFrame
 			{artwork}
 			position={[(index - (artworks.length - 1) / 2) * spacing, 0, 0.04]}
+			focused={focusedArtworkId === artwork.id}
 			{onSelect}
 		/>
 	{/each}
