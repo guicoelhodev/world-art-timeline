@@ -6,18 +6,16 @@
 	let {
 		artist,
 		artworks,
-		overlayOpen,
 		onSelect
 	}: {
 		artist: Artist;
 		artworks: Artwork[];
-		overlayOpen: boolean;
-		onSelect: (artwork: Artwork) => void;
+		onSelect?: (artwork: Artwork | null) => void;
 	} = $props();
 </script>
 
 <div class="relative h-dvh w-screen touch-none" data-room-canvas tabindex="-1">
 	<Canvas>
-		<SceneStage {artist} {artworks} {overlayOpen} {onSelect} />
+		<SceneStage {artist} {artworks} {onSelect} />
 	</Canvas>
 </div>
