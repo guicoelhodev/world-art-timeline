@@ -13,13 +13,11 @@
 	let {
 		artist,
 		artworks,
-		overlayOpen,
 		onSelect
 	}: {
 		artist: Artist;
 		artworks: Artwork[];
-		overlayOpen: boolean;
-		onSelect: (artwork: Artwork) => void;
+		onSelect?: (artwork: Artwork | null) => void;
 	} = $props();
 	let featuredArtwork = $derived(artworks[0]);
 	let remainingArtworks = $derived(artworks.slice(1));
@@ -29,6 +27,7 @@
 	let rightWall = $derived(sideWallArtworks.filter((_, index) => index % 2 === 0));
 	let leftWall = $derived(sideWallArtworks.filter((_, index) => index % 2 === 1));
 	let focusedArtworkId = $state<string | null>(null);
+	let selectedArtworkId = $state<string | null>(null);
 
 	const { camera, scene } = useThrelte();
 	const raycaster = new Raycaster();
@@ -51,10 +50,17 @@
 	function handleClick(event: MouseEvent) {
 		const target = event.target;
 		if (target instanceof HTMLElement && target.closest('button, a, input')) return;
-		if (overlayOpen) return;
-		if (!focusedArtworkId) return;
-		const artwork = artworkById.get(focusedArtworkId);
-		if (artwork) onSelect(artwork);
+
+		if (!(camera.current instanceof Camera)) return;
+
+		raycaster.setFromCamera(center, camera.current);
+		const hit = raycaster
+			.intersectObjects(scene.children, true)
+			.find((intersection) => artworkIdFromObject(intersection.object));
+
+		const id = hit ? artworkIdFromObject(hit.object) : null;
+		selectedArtworkId = id;
+		onSelect?.(id ? (artworkById.get(id) ?? null) : null);
 	}
 
 	useTask(() => {
@@ -68,12 +74,17 @@
 			.find((intersection) => artworkIdFromObject(intersection.object));
 
 		focusedArtworkId = hit ? artworkIdFromObject(hit.object) : null;
+
+		if (selectedArtworkId && focusedArtworkId !== selectedArtworkId) {
+			selectedArtworkId = null;
+			onSelect?.(null);
+		}
 	});
 </script>
 
 <svelte:window onclick={handleClick} />
 
-<CameraControls {overlayOpen} />
+<CameraControls />
 <T.AmbientLight intensity={0.7} />
 <T.HemisphereLight args={['#fff8ec', '#b8a37f', 1.1]} />
 <T.PointLight position={[0, 3.8, 0]} intensity={16} distance={13} color="#fff5df" />
@@ -90,7 +101,7 @@
 				focused={focusedArtworkId === featuredArtwork.id}
 				maxWidth={11.2}
 				maxHeight={3.3}
-				{onSelect}
+			{onSelect}
 			/>
 		</T.Group>
 	{/if}
