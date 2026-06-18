@@ -3,41 +3,75 @@
 
 	let {
 		artwork,
-		language
-	}: { artwork: Artwork; language: SupportedLanguage } = $props();
+		language,
+		artistName
+	}: { artwork: Artwork; language: SupportedLanguage; artistName: string } = $props();
 
 	const localized = (value: Partial<Record<SupportedLanguage, string>>) =>
 		value[language] ?? value.en ?? value.pt ?? '';
-	let sourceUrl = $derived(
-		artwork.sourceUrl[language] ?? artwork.sourceUrl.en ?? artwork.wikidataUrl
+
+	let movement = $derived(localized(artwork.movement ?? {}));
+	let medium = $derived(localized(artwork.medium ?? {}));
+	let genre = $derived(localized(artwork.genre ?? {}));
+	let location = $derived(localized(artwork.location ?? {}));
+	let dimensions = $derived(
+		artwork.dimensions?.width && artwork.dimensions?.height
+			? `${artwork.dimensions.width} × ${artwork.dimensions.height} cm`
+			: undefined
 	);
+
+	let description = $derived(
+		artwork.extract || localized(artwork.description) || 'No description available.'
+	);
+
+	let metaLine = $derived(
+		[artistName, artwork.year?.toString(), medium, genre, location].filter(Boolean).join(' · ')
+	);
+
+	let scrollContainer: HTMLDivElement | undefined = $state();
+
+	function handleWheel(event: WheelEvent) {
+		if (!scrollContainer) return;
+		scrollContainer.scrollTop += event.deltaY;
+		event.preventDefault();
+	}
 </script>
 
+<svelte:window onwheel={handleWheel} />
+
 <div
-	class="fixed right-0 top-0 z-40 flex h-dvh w-80 flex-col border-l border-stone-700 bg-stone-950/90 shadow-xl backdrop-blur-md md:w-96"
+	class="fixed right-0 top-0 z-40 flex h-dvh w-96 flex-col border-l border-stone-700 bg-stone-800/80 shadow-xl backdrop-blur-md md:w-[28rem]"
 >
-	<div class="overflow-y-auto p-5">
-		{#if artwork.image}
-			<img
-				class="mb-4 w-full rounded-lg object-cover"
-				src={artwork.image.thumbnailUrl}
-				alt={localized(artwork.title)}
-			/>
-		{/if}
-		<div>
-			<p class="text-xs font-semibold uppercase tracking-[0.28em] text-amber-300">Artwork</p>
-			<h2 class="mt-2 text-xl font-semibold text-stone-50">{localized(artwork.title)}</h2>
-		</div>
-
-		{#if artwork.year}
-			<p class="mt-2 text-sm text-stone-400">{artwork.year}</p>
+	<div
+		class="sticky top-0 z-10 border-b border-stone-700/50 bg-stone-800/90 px-5 pb-3 pt-5 backdrop-blur-md"
+	>
+		{#if movement}
+			<span
+				class="inline-block rounded-full border border-amber-500/40 px-2.5 py-0.5 text-xs font-medium uppercase tracking-[0.22em] text-amber-300"
+			>
+				{movement}
+			</span>
 		{/if}
 
-		<p class="mt-4 leading-7 text-stone-300">
-			{localized(artwork.description) || 'No description available from the public APIs.'}
-		</p>
+		<h2 class="mt-2.5 text-2xl font-semibold leading-tight text-stone-50">
+			{localized(artwork.title)}
+		</h2>
 
-		<dl class="mt-5 space-y-3 text-sm text-stone-300">
+		{#if metaLine}
+			<p class="mt-1.5 text-sm leading-relaxed text-stone-400">{metaLine}</p>
+		{/if}
+	</div>
+
+	<div bind:this={scrollContainer} class="flex-1 overflow-y-auto px-5">
+		<div class="mt-4 leading-7 text-stone-200">{description}</div>
+
+		<dl class="mt-5 space-y-3 pb-5 text-sm text-stone-300">
+			{#if dimensions}
+				<div>
+					<dt class="font-medium text-stone-100">Dimensions</dt>
+					<dd>{dimensions}</dd>
+				</div>
+			{/if}
 			{#if artwork.license}
 				<div>
 					<dt class="font-medium text-stone-100">License</dt>
@@ -47,29 +81,9 @@
 			{#if artwork.credit}
 				<div>
 					<dt class="font-medium text-stone-100">Credit</dt>
-					<dd>{artwork.credit}</dd>
-				</div>
-			{/if}
-			{#if artwork.image?.sourceUrl}
-				<div>
-					<dt class="font-medium text-stone-100">Image source</dt>
-					<dd>
-						<a
-							class="text-amber-200 underline"
-							href={artwork.image.sourceUrl}
-							target="_blank"
-							rel="external noreferrer">Wikimedia Commons</a
-						>
-					</dd>
+					<dd class="break-words">{artwork.credit}</dd>
 				</div>
 			{/if}
 		</dl>
-
-		<a
-			class="mt-5 inline-flex rounded-full bg-amber-300 px-4 py-2 text-sm font-semibold text-stone-950 hover:bg-amber-200"
-			href={sourceUrl}
-			target="_blank"
-			rel="external noreferrer">Open source page</a
-		>
 	</div>
 </div>
