@@ -73,5 +73,5 @@
 </main>
 
 {#if focusedArtwork}
-	<ArtworkOverlay artwork={focusedArtwork} language={data.language} />
+	<ArtworkOverlay artwork={focusedArtwork} language={data.language} artistName={localized(data.artist.name)} />
 {/if}
