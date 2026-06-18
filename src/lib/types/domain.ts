@@ -30,6 +30,11 @@ export type Artwork = {
 	title: LocalizedString;
 	year?: number;
 	description: LocalizedString;
+	extract?: string;
+	movement?: LocalizedString;
+	medium?: LocalizedString;
+	genre?: LocalizedString;
+	location?: LocalizedString;
 	image?: ImageMetadata;
 	sourceUrl: Partial<Record<SupportedLanguage, string>>;
 	wikidataUrl: string;
