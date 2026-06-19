@@ -8,7 +8,16 @@
 
 	const localized = (value: Partial<Record<'en' | 'pt', string>>) =>
 		value[data.language] ?? value.en ?? value.pt ?? '';
+
+	function handleKeydown(event: KeyboardEvent) {
+		if (event.key.toLowerCase() === 'c' && focusedArtwork) {
+			event.preventDefault();
+			focusedArtwork = null;
+		}
+	}
 </script>
+
+<svelte:window onkeydown={handleKeydown} />
 
 <svelte:head>
 	<title>{localized(data.artist.name)} Exhibition Room</title>
@@ -47,8 +56,9 @@
 					<kbd class="text-stone-50">W A S D</kbd> or <kbd class="text-stone-50">Arrows</kbd> — walk
 				</li>
 				<li><kbd class="text-stone-50">Mouse</kbd> — look around</li>
-				<li><kbd class="text-stone-50">Ctrl</kbd> (hold) — zoom in</li>
+				<li><kbd class="text-stone-50">Z</kbd> (hold) — zoom in</li>
 				<li><kbd class="text-stone-50">Click</kbd> artwork — details</li>
+				<li><kbd class="text-stone-50">C</kbd> — close details</li>
 			</ul>
 		</div>
 	</section>

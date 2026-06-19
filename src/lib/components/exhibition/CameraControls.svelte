@@ -14,7 +14,7 @@
 	let camera = $state<PerspectiveCamera>();
 	let yaw = $state(0);
 	let pitch = $state(0);
-	let ctrlPressed = $state(false);
+	let zoomPressed = $state(false);
 	let zoomFov = $state(68);
 
 	const normalFov = 68;
@@ -26,9 +26,9 @@
 	function handleKeydown(event: KeyboardEvent) {
 		const key = event.key.toLowerCase();
 
-		if (key === 'control') {
+		if (key === 'z') {
 			event.preventDefault();
-			ctrlPressed = true;
+			zoomPressed = true;
 			return;
 		}
 
@@ -40,8 +40,8 @@
 
 	function handleKeyup(event: KeyboardEvent) {
 		const key = event.key.toLowerCase();
-		if (key === 'control') {
-			ctrlPressed = false;
+		if (key === 'z') {
+			zoomPressed = false;
 			return;
 		}
 		pressed.delete(key);
@@ -69,12 +69,12 @@
 		euler.set(pitch, yaw, 0);
 		camera.quaternion.setFromEuler(euler);
 
-		const targetFov = ctrlPressed ? zoomedFov : normalFov;
+		const targetFov = zoomPressed ? zoomedFov : normalFov;
 		zoomFov = MathUtils.lerp(zoomFov, targetFov, Math.min(zoomLerpSpeed * delta, 1));
 		camera.fov = zoomFov;
 		camera.updateProjectionMatrix();
 
-		const speed = ctrlPressed ? zoomedSpeed : normalSpeed;
+		const speed = zoomPressed ? zoomedSpeed : normalSpeed;
 
 		movement.set(0, 0, 0);
 		if (pressed.has('w') || pressed.has('arrowup')) movement.z -= 1;
