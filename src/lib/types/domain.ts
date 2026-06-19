@@ -1,4 +1,4 @@
-export type SupportedLanguage = 'en' | 'pt';
+export type SupportedLanguage = 'en';
 
 export type LocalizedString = Partial<Record<SupportedLanguage, string>>;
 
@@ -51,5 +51,4 @@ export type ArtistRoom = {
 	artist: Artist;
 	artworks: Artwork[];
 	language: SupportedLanguage;
-	availableLanguages: SupportedLanguage[];
 };

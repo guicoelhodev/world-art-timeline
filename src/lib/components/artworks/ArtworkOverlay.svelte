@@ -8,7 +8,7 @@
 	}: { artwork: Artwork; language: SupportedLanguage; artistName: string } = $props();
 
 	const localized = (value: Partial<Record<SupportedLanguage, string>>) =>
-		value[language] ?? value.en ?? value.pt ?? '';
+		value[language] ?? value.en ?? '';
 
 	let movement = $derived(localized(artwork.movement ?? {}));
 	let medium = $derived(localized(artwork.medium ?? {}));
@@ -28,16 +28,12 @@
 		[artistName, artwork.year?.toString(), medium, genre, location].filter(Boolean).join(' · ')
 	);
 
-	let scrollContainer: HTMLDivElement | undefined = $state();
-
 	function handleWheel(event: WheelEvent) {
-		if (!scrollContainer) return;
-		scrollContainer.scrollTop += event.deltaY;
+		const target = event.currentTarget as HTMLDivElement;
+		target.scrollTop += event.deltaY;
 		event.preventDefault();
 	}
 </script>
-
-<svelte:window onwheel={handleWheel} />
 
 <div
 	class="fixed right-0 top-0 z-40 flex h-dvh w-96 flex-col border-l border-stone-700 bg-stone-800/80 shadow-xl backdrop-blur-md md:w-[28rem]"
@@ -62,7 +58,7 @@
 		{/if}
 	</div>
 
-	<div bind:this={scrollContainer} class="flex-1 overflow-y-auto px-5">
+	<div onwheel={handleWheel} class="flex-1 overflow-y-auto px-5">
 		<div class="mt-4 leading-7 text-stone-200">{description}</div>
 
 		<dl class="mt-5 space-y-3 pb-5 text-sm text-stone-300">

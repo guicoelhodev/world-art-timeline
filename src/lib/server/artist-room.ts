@@ -6,7 +6,6 @@ import type {
 	SupportedLanguage
 } from '$lib/types/domain';
 
-const SUPPORTED_LANGUAGES: SupportedLanguage[] = ['en', 'pt'];
 const DEFAULT_LANGUAGE: SupportedLanguage = 'en';
 const USER_AGENT = 'art-timeline-3d/0.0.1 (https://localhost)';
 
@@ -65,14 +64,8 @@ type CommonsImageInfoResponse = {
 	};
 };
 
-export function normalizeLanguage(value: string | null): SupportedLanguage {
-	return value === 'pt' ? 'pt' : DEFAULT_LANGUAGE;
-}
-
-export async function loadArtistRoom(
-	author: string,
-	language: SupportedLanguage
-): Promise<ArtistRoom> {
+export async function loadArtistRoom(author: string): Promise<ArtistRoom> {
+	const language = DEFAULT_LANGUAGE;
 	const wikidataId = await resolveArtistId(author, language);
 	const [artist, artworks] = await Promise.all([
 		fetchArtist(wikidataId, language),
@@ -82,8 +75,7 @@ export async function loadArtistRoom(
 	return {
 		artist,
 		artworks,
-		language,
-		availableLanguages: SUPPORTED_LANGUAGES
+		language
 	};
 }
 
@@ -122,16 +114,13 @@ async function fetchArtist(wikidataId: string, language: SupportedLanguage): Pro
 		id: wikidataId,
 		slug: slugify(label(entity, 'en') ?? wikidataId),
 		name: {
-			en: label(entity, 'en') ?? label(entity, language) ?? wikidataId,
-			pt: label(entity, 'pt') ?? label(entity, 'en') ?? wikidataId
+			en: label(entity, 'en') ?? wikidataId
 		},
 		description: {
-			en: description(entity, 'en') ?? '',
-			pt: description(entity, 'pt') ?? description(entity, 'en') ?? ''
+			en: description(entity, 'en') ?? ''
 		},
 		sourceUrl: {
-			en: sitelinks.enwiki?.url ?? wikiUrl('en', sitelinks.enwiki?.title),
-			pt: sitelinks.ptwiki?.url ?? wikiUrl('pt', sitelinks.ptwiki?.title)
+			en: sitelinks.enwiki?.url ?? wikiUrl('en', sitelinks.enwiki?.title)
 		},
 		wikidataUrl: `https://www.wikidata.org/wiki/${wikidataId}`,
 		image
@@ -139,8 +128,8 @@ async function fetchArtist(wikidataId: string, language: SupportedLanguage): Pro
 }
 
 async function fetchArtworks(wikidataId: string, language: SupportedLanguage): Promise<Artwork[]> {
-	const articleHost = language === 'pt' ? 'https://pt.wikipedia.org/' : 'https://en.wikipedia.org/';
-	const labelLanguages = language === 'pt' ? 'pt,en' : 'en,pt';
+	const articleHost = 'https://en.wikipedia.org/';
+	const labelLanguages = 'en';
 	const query = `
 SELECT ?work ?workLabel ?workDescription ?sitelinks
   (MIN(?inceptionValue) AS ?inception)
@@ -234,20 +223,18 @@ LIMIT 40`;
 			id: data.id,
 			artistId: wikidataId,
 			title: {
-				en: data.title,
-				pt: data.title
+				en: data.title
 			},
 			year: yearFromWikidataDate(bindings[i].inception?.value),
 			description: {
-				en: data.descriptionText,
-				pt: data.descriptionText
+				en: data.descriptionText
 			},
 			extract: wikiExtracts[i],
-			movement: data.movement ? { en: data.movement, pt: data.movement } : undefined,
-			medium: data.material ? { en: data.material, pt: data.material } : undefined,
-			artworkType: data.artworkType ? { en: data.artworkType, pt: data.artworkType } : undefined,
-			genre: data.genre ? { en: data.genre, pt: data.genre } : undefined,
-			location: data.location ? { en: data.location, pt: data.location } : undefined,
+			movement: data.movement ? { en: data.movement } : undefined,
+			medium: data.material ? { en: data.material } : undefined,
+			artworkType: data.artworkType ? { en: data.artworkType } : undefined,
+			genre: data.genre ? { en: data.genre } : undefined,
+			location: data.location ? { en: data.location } : undefined,
 			image,
 			sourceUrl: {
 				[language]: data.sourceUrl

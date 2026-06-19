@@ -22,7 +22,7 @@
 
 	let hover = $state(false);
 	let active = $derived(hover || focused);
-	let title = $derived(artwork.title.en ?? artwork.title.pt ?? artwork.id);
+	let title = $derived(artwork.title.en ?? artwork.id);
 	let imageUrl = $derived(artwork.image?.url ?? artwork.image?.thumbnailUrl);
 	let imageSize = $derived.by(() =>
 		fitImage(artwork.dimensions?.width, artwork.dimensions?.height)

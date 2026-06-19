@@ -6,8 +6,8 @@
 	let { data }: import('./$types').PageProps = $props();
 	let focusedArtwork = $state<Artwork | null>(null);
 
-	const localized = (value: Partial<Record<'en' | 'pt', string>>) =>
-		value[data.language] ?? value.en ?? value.pt ?? '';
+	const localized = (value: Partial<Record<'en', string>>) =>
+		value[data.language] ?? value.en ?? '';
 
 	function handleKeydown(event: KeyboardEvent) {
 		if (event.key.toLowerCase() === 'c' && focusedArtwork) {
