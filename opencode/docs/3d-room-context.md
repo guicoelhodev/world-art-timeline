@@ -11,7 +11,7 @@
   └─ artist-room.ts::loadArtistRoom(author, lang)
        ├─ resolveArtistId → Wikidata wbsearchentities
        ├─ fetchArtist → Wikidata entity data
-       └─ fetchArtworks → SPARQL query (16 paintings) + Wikipedia extracts
+       └─ fetchArtworks → SPARQL query (visual artworks) + Wikipedia extracts
                           + Wikimedia Commons images (parallel)
                           → ArtistRoom { artist, artworks, language }
        │
@@ -31,27 +31,27 @@
 
 ## Component Tree & Responsibilities
 
-| Component | File | Role |
-|---|---|---|
-| `+page.svelte` | `routes/room/` | Layout, lang switcher, HUD, orchestrates selected artwork |
-| `ExhibitionScene` | `exhibition/` | `<Canvas>` wrapper, passes `onSelect` down |
-| `SceneStage` | `exhibition/` | Raycast (visual focus), click handler, artwork distribution, lights |
-| `CameraControls` | `exhibition/` | First-person WASD, pointer lock, mouse look |
-| `Room` | `exhibition/` | Floor + ceiling + 4 wall planes |
-| `GalleryWall` | `exhibition/` | Distributes frames horizontally along a wall |
-| `ArtworkFrame` | `exhibition/` | Single frame: box border + HTML image + invisible raycast surface |
-| `ArtworkOverlay` | `artworks/` | Right-side panel, sticky header, scrollable description |
+| Component         | File           | Role                                                                |
+| ----------------- | -------------- | ------------------------------------------------------------------- |
+| `+page.svelte`    | `routes/room/` | Layout, lang switcher, HUD, orchestrates selected artwork           |
+| `ExhibitionScene` | `exhibition/`  | `<Canvas>` wrapper, passes `onSelect` down                          |
+| `SceneStage`      | `exhibition/`  | Raycast (visual focus), click handler, artwork distribution, lights |
+| `CameraControls`  | `exhibition/`  | First-person WASD, pointer lock, mouse look                         |
+| `Room`            | `exhibition/`  | Floor + ceiling + 4 wall planes                                     |
+| `GalleryWall`     | `exhibition/`  | Distributes frames horizontally along a wall                        |
+| `ArtworkFrame`    | `exhibition/`  | Single frame: box border + HTML image + invisible raycast surface   |
+| `ArtworkOverlay`  | `artworks/`    | Right-side panel, sticky header, scrollable description             |
 
 ## Room Geometry
 
-| Element | Position | Size | Color |
-|---|---|---|---|
-| Floor | `(0,0,0)` rot `-π/2` | `14 × 30` | `#9e9990` |
-| Ceiling | `(0,6,0)` rot `π/2` | `14 × 30` | `#d6d1c6` |
-| Back wall | `(0,3,-15)` | `14 × 6` | `#d6d1c6` |
-| Front wall | `(0,3,15)` rot `π` | `14 × 6` | `#d6d1c6` |
-| Left wall | `(-6,3,0)` rot `π/2` | `30 × 6` | `#d6d1c6` |
-| Right wall | `(6,3,0)` rot `-π/2` | `30 × 6` | `#d6d1c6` |
+| Element    | Position             | Size      | Color     |
+| ---------- | -------------------- | --------- | --------- |
+| Floor      | `(0,0,0)` rot `-π/2` | `14 × 30` | `#9e9990` |
+| Ceiling    | `(0,6,0)` rot `π/2`  | `14 × 30` | `#d6d1c6` |
+| Back wall  | `(0,3,-15)`          | `14 × 6`  | `#d6d1c6` |
+| Front wall | `(0,3,15)` rot `π`   | `14 × 6`  | `#d6d1c6` |
+| Left wall  | `(-6,3,0)` rot `π/2` | `30 × 6`  | `#d6d1c6` |
+| Right wall | `(6,3,0)` rot `-π/2` | `30 × 6`  | `#d6d1c6` |
 
 Camera starts at `(0, 1.6, 0)` — center of room, eye level.
 
@@ -69,6 +69,7 @@ leftWall          = sideWallArtworks[i % 2 === 1]  → 6 artworks
 ```
 
 Wall positions for GalleryWall groups:
+
 - Back (featured): `(0, 3, -14.92)` — offset 0.08 from wall at z=-15
 - Front: `(0, 3, 14.92)` rot `(0, π, 0)`
 - Right: `(5.92, 3, 0)` rot `(0, -π/2, 0)`
@@ -85,11 +86,11 @@ Wall positions for GalleryWall groups:
 
 ## ArtworkFrame Details
 
-| Element | Local pos | Geometry |
-|---|---|---|
-| Frame box | `(0,0,-0.035)` | `BoxGeometry(frameSize[0]+0.32, frameSize[1]+0.38, 0.08)` |
-| Raycast plane | `(0,0,0.03)` | `PlaneGeometry(imageSize)`, transparent, `DoubleSide` |
-| HTML image | `(0,0,0.04)` | `<HTML>` with `scale=0.2`, `surfacePixels = imageSize × 200` |
+| Element       | Local pos      | Geometry                                                     |
+| ------------- | -------------- | ------------------------------------------------------------ |
+| Frame box     | `(0,0,-0.035)` | `BoxGeometry(frameSize[0]+0.32, frameSize[1]+0.38, 0.08)`    |
+| Raycast plane | `(0,0,0.03)`   | `PlaneGeometry(imageSize)`, transparent, `DoubleSide`        |
+| HTML image    | `(0,0,0.04)`   | `<HTML>` with `scale=0.2`, `surfacePixels = imageSize × 200` |
 
 `fitImage()` preserves aspect ratio within `maxWidth`/`maxHeight`.
 Featured: `maxWidth=11.2, maxHeight=4.8`. Regular: `maxWidth=2.08, maxHeight=2.72`.
@@ -103,24 +104,25 @@ Featured: `maxWidth=11.2, maxHeight=4.8`. Regular: `maxWidth=2.08, maxHeight=2.7
 
 ## Lighting
 
-| Light | Position | Intensity | Distance | Color |
-|---|---|---|---|---|
-| Ambient | — | 0.7 | — | — |
-| Hemisphere | sky `#fff8ec`, ground `#b8a37f` | 1.1 | — | — |
-| Point (center) | `(0, 4.5, 0)` | 16 | 13 | `#fff5df` |
-| Point (near back) | `(0, 3, -10)` | 7 | 12 | `#fff8ec` |
-| Point (near front) | `(0, 3, 10)` | 7 | 12 | `#fff8ec` |
+| Light              | Position                        | Intensity | Distance | Color     |
+| ------------------ | ------------------------------- | --------- | -------- | --------- |
+| Ambient            | —                               | 0.7       | —        | —         |
+| Hemisphere         | sky `#fff8ec`, ground `#b8a37f` | 1.1       | —        | —         |
+| Point (center)     | `(0, 4.5, 0)`                   | 16        | 13       | `#fff5df` |
+| Point (near back)  | `(0, 3, -10)`                   | 7         | 12       | `#fff8ec` |
+| Point (near front) | `(0, 3, 10)`                    | 7         | 12       | `#fff8ec` |
 
 ## Server-side Data (`artist-room.ts`)
 
 **Endpoints called (all free/public):**
+
 - `wikidata.org/w/api.php?action=wbsearchentities` — resolve author name to QID
 - `wikidata.org/wiki/Special:EntityData/{QID}.json` — artist entity (labels, sitelinks)
-- `query.wikidata.org/sparql` — SPARQL for 32 paintings, sorted by sitelinks DESC, filtred to P31:P279* Q3305213 (painting), requires P18 (image)
+- `query.wikidata.org/sparql` — SPARQL for visual artworks, sorted by sitelinks DESC, filtered to P31:P279\* Q838948 (work of art), requires P18 (image)
 - `commons.wikimedia.org/w/api.php` — image metadata (thumb, license, credit, dimensions), `iiurlwidth=2000`
 - `{lang}.wikipedia.org/w/api.php?prop=extracts&exintro` — intro paragraph for each artwork with Wikipedia article
 
-**SPARQL selects:** P571 (inception/year), P135 (movement), P186 (material), P136 (genre), P276 (location) — all OPTIONAL, SAMPLED
+**SPARQL selects:** P571 (inception/year), P31 (artwork type), P135 (movement), P186 (material), P136 (genre), P276 (location) — all OPTIONAL, SAMPLED
 
 **After SPARQL:** 16 Commons image fetches + 16 Wikipedia extracts → all in `Promise.all`, not serial. Filters artworks without images. Slices to 16 max.
 
@@ -130,7 +132,7 @@ Featured: `maxWidth=11.2, maxHeight=4.8`. Regular: `maxWidth=2.08, maxHeight=2.7
 Artwork {
   id, artistId, title: LocalizedString, year?, description: LocalizedString,
   extract?, movement?: LocalizedString, medium?: LocalizedString,
-  genre?: LocalizedString, location?: LocalizedString,
+  artworkType?: LocalizedString, genre?: LocalizedString, location?: LocalizedString,
   image?: ImageMetadata, sourceUrl, wikidataUrl, license?, credit?,
   dimensions?: { width?, height? }
 }
@@ -150,19 +152,19 @@ LocalizedString = Partial<Record<'en' | 'pt', string>>
 
 ## Key Files
 
-| File | Purpose |
-|---|---|
-| `src/routes/room/+page.server.ts` | Load function, calls `loadArtistRoom` |
-| `src/routes/room/+page.svelte` | Page layout, HUD, overlay state |
-| `src/lib/server/artist-room.ts` | All data fetching + normalization |
-| `src/lib/types/domain.ts` | All TypeScript types |
-| `src/lib/components/exhibition/SceneStage.svelte` | Scene orchestration, raycast, click |
-| `src/lib/components/exhibition/Room.svelte` | Floor, ceiling, 4 walls |
-| `src/lib/components/exhibition/CameraControls.svelte` | FPS controls |
-| `src/lib/components/exhibition/GalleryWall.svelte` | Wall layout distribution |
-| `src/lib/components/exhibition/ArtworkFrame.svelte` | Single framed artwork |
-| `src/lib/components/exhibition/ExhibitionScene.svelte` | Canvas wrapper |
-| `src/lib/components/artworks/ArtworkOverlay.svelte` | Side panel with artwork info |
+| File                                                   | Purpose                               |
+| ------------------------------------------------------ | ------------------------------------- |
+| `src/routes/room/+page.server.ts`                      | Load function, calls `loadArtistRoom` |
+| `src/routes/room/+page.svelte`                         | Page layout, HUD, overlay state       |
+| `src/lib/server/artist-room.ts`                        | All data fetching + normalization     |
+| `src/lib/types/domain.ts`                              | All TypeScript types                  |
+| `src/lib/components/exhibition/SceneStage.svelte`      | Scene orchestration, raycast, click   |
+| `src/lib/components/exhibition/Room.svelte`            | Floor, ceiling, 4 walls               |
+| `src/lib/components/exhibition/CameraControls.svelte`  | FPS controls                          |
+| `src/lib/components/exhibition/GalleryWall.svelte`     | Wall layout distribution              |
+| `src/lib/components/exhibition/ArtworkFrame.svelte`    | Single framed artwork                 |
+| `src/lib/components/exhibition/ExhibitionScene.svelte` | Canvas wrapper                        |
+| `src/lib/components/artworks/ArtworkOverlay.svelte`    | Side panel with artwork info          |
 
 ## Constraints to Preserve
 

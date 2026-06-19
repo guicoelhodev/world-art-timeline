@@ -39,6 +39,7 @@ type SparqlBinding = {
 	sitelinks?: { value: string };
 	movementLabel?: { value: string };
 	materialLabel?: { value: string };
+	typeLabel?: { value: string };
 	genreLabel?: { value: string };
 	locationLabel?: { value: string };
 };
@@ -147,6 +148,7 @@ SELECT ?work ?workLabel ?workDescription ?sitelinks
   (SAMPLE(?articleValue) AS ?article)
   (SAMPLE(?movementLabel) AS ?movementLabel)
   (SAMPLE(?materialLabel) AS ?materialLabel)
+  (SAMPLE(?typeLabel) AS ?typeLabel)
   (SAMPLE(?genreLabel) AS ?genreLabel)
   (SAMPLE(?locationLabel) AS ?locationLabel)
 WHERE {
@@ -154,7 +156,8 @@ WHERE {
   ?work wdt:P170 ?artist;
     wdt:P18 ?imageValue;
     wikibase:sitelinks ?sitelinks;
-    wdt:P31/wdt:P279* wd:Q3305213.
+    wdt:P31/wdt:P279* wd:Q838948.
+  OPTIONAL { ?work wdt:P31 ?type. }
   OPTIONAL { ?work wdt:P571 ?inceptionValue. }
   OPTIONAL {
     ?articleValue schema:about ?work;
@@ -170,6 +173,7 @@ WHERE {
     ?work schema:description ?workDescription.
     ?movement rdfs:label ?movementLabel.
     ?material rdfs:label ?materialLabel.
+    ?type rdfs:label ?typeLabel.
     ?genre rdfs:label ?genreLabel.
     ?location rdfs:label ?locationLabel.
   }
@@ -193,10 +197,22 @@ LIMIT 40`;
 		const sourceUrl = binding.article?.value ?? `https://www.wikidata.org/wiki/${id}`;
 		const movement = binding.movementLabel?.value;
 		const material = binding.materialLabel?.value;
+		const artworkType = binding.typeLabel?.value;
 		const genre = binding.genreLabel?.value;
 		const locationVal = binding.locationLabel?.value;
 
-		return { id, imageFile, title, descriptionText, sourceUrl, movement, material, genre, location: locationVal };
+		return {
+			id,
+			imageFile,
+			title,
+			descriptionText,
+			sourceUrl,
+			movement,
+			material,
+			artworkType,
+			genre,
+			location: locationVal
+		};
 	});
 
 	const [commonsResults, wikiExtracts] = await Promise.all([
@@ -229,6 +245,7 @@ LIMIT 40`;
 			extract: wikiExtracts[i],
 			movement: data.movement ? { en: data.movement, pt: data.movement } : undefined,
 			medium: data.material ? { en: data.material, pt: data.material } : undefined,
+			artworkType: data.artworkType ? { en: data.artworkType, pt: data.artworkType } : undefined,
 			genre: data.genre ? { en: data.genre, pt: data.genre } : undefined,
 			location: data.location ? { en: data.location, pt: data.location } : undefined,
 			image,

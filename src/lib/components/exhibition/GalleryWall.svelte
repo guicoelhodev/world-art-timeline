@@ -18,6 +18,8 @@
 	} = $props();
 
 	const gap = 0.75;
+	const landscapeAspectRatio = 1.15;
+	const landscapeWidthMultiplier = 1.5;
 	let framePositions = $derived.by(() => {
 		const widths = artworks.map(frameWidth);
 		const totalWidth =
@@ -37,7 +39,8 @@
 		const width = artwork.dimensions?.width ?? 1;
 		const height = artwork.dimensions?.height ?? 1;
 		const aspect = width > 0 && height > 0 ? width / height : 1;
-		let fittedWidth = maxWidth;
+		let fittedWidth =
+			aspect > landscapeAspectRatio ? maxWidth * landscapeWidthMultiplier : maxWidth;
 		let fittedHeight = fittedWidth / aspect;
 
 		if (fittedHeight > maxHeight) {

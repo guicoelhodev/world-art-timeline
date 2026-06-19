@@ -5,6 +5,7 @@ The idea is to build an interactive timeline of visual artists and their artwork
 The project has two main experiences:
 
 1. 2D Timeline
+
 - Show visual artists organized by historical time period.
 - Each artist should appear on an interactive timeline.
 - The user can click an artist to open their detail page.
@@ -12,14 +13,16 @@ The project has two main experiences:
 - Initial data can be mocked/seeded locally.
 
 2. 3D Exhibition Room
+
 - From an artist page, the user can enter a 3D exhibition room.
 - The room should feel like a simple art gallery/museum exhibition.
-- The artist’s artworks should be rendered as framed paintings on the wall.
+- The artist’s artworks should be rendered as framed artwork images on the wall.
 - Clicking an artwork should open an HTML overlay explaining the artwork.
 - I want to use Threlte because I am already familiar with it.
 - The 3D room should be simple for the MVP: no complex physics, no multiplayer, no heavy realism.
 
 Desired stack:
+
 - SvelteKit
 - TypeScript
 - Tailwind CSS
@@ -53,6 +56,7 @@ The documentation should cover:
 ## 1. Product Vision
 
 Explain:
+
 - What the project is.
 - The core user experience.
 - What is inside the MVP scope.
@@ -66,6 +70,7 @@ The initial focus should be on visual artists, not generic “authors”, becaus
 Split the project into small phases.
 
 Required order:
+
 1. Static MVP with local mocked/seeded data.
 2. 2D timeline and artist detail pages.
 3. Artwork overlay in regular HTML.
@@ -87,6 +92,7 @@ Define the main TypeScript domain models, including:
 - loading/error/fallback states where useful
 
 Important rules:
+
 - UI components must not consume raw Wikipedia/Wikimedia API responses directly.
 - All external data must go through a normalization layer before reaching the UI.
 - The data model must tolerate missing data.
@@ -103,6 +109,7 @@ Document the preferred data flow:
 5. The SvelteKit app consumes those local JSON files.
 
 Important:
+
 - The frontend should not call Wikipedia/Wikimedia APIs on every user visit.
 - Avoid runtime dependency on external APIs for the MVP.
 - Keep the project free to run and deploy.
@@ -110,6 +117,7 @@ Important:
 ## 5. Wikipedia/Wikimedia Integration
 
 Document:
+
 - Do not use HTML scraping.
 - Use public Wikimedia/Wikipedia APIs when needed.
 - Use Wikimedia Commons for images when available.
@@ -159,6 +167,7 @@ Suggested components:
 - `ArtworkOverlay.svelte`
 
 Also document what not to do in the MVP:
+
 - no complex physics
 - no multiplayer
 - no GLTF-heavy museum models
@@ -195,6 +204,7 @@ Each task should include:
 The tasks should be ordered so an agent can execute them safely one at a time.
 
 Expected output:
+
 - Create the markdown files inside `/docs`.
 - Do not implement application code yet.
 - Do not install dependencies yet.

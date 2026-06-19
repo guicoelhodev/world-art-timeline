@@ -33,10 +33,13 @@
 		Math.round(imageSize[1] * 200)
 	]);
 	let fallbackFontSize = $derived(`${Math.max(18, Math.round(surfacePixels[0] / 8))}px`);
+	const landscapeAspectRatio = 1.15;
+	const landscapeWidthMultiplier = 1.5;
 
 	function fitImage(width = 1, height = 1): [number, number] {
 		const aspect = width > 0 && height > 0 ? width / height : 1;
-		let fittedWidth = maxWidth;
+		let fittedWidth =
+			aspect > landscapeAspectRatio ? maxWidth * landscapeWidthMultiplier : maxWidth;
 		let fittedHeight = fittedWidth / aspect;
 
 		if (fittedHeight > maxHeight) {

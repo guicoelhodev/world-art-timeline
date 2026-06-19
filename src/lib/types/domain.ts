@@ -33,6 +33,7 @@ export type Artwork = {
 	extract?: string;
 	movement?: LocalizedString;
 	medium?: LocalizedString;
+	artworkType?: LocalizedString;
 	genre?: LocalizedString;
 	location?: LocalizedString;
 	image?: ImageMetadata;
