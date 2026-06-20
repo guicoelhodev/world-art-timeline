@@ -464,7 +464,7 @@
 						></div>
 
 						<a
-							class="absolute z-0 flex flex-col items-center outline-none"
+							class="absolute z-10 flex flex-col items-center outline-none"
 							style:left={`${Math.max(axisPadding / 4, item.x - avatarSize / 2)}px`}
 							style:top={`calc(50% + ${item.offset - avatarSize / 2}px)`}
 							href={roomHref(item.artist)}
@@ -506,7 +506,7 @@
 								<div
 									class="absolute left-1/2 w-44 -translate-x-1/2 rounded-xl border border-stone-800 bg-stone-900/95 p-3 text-center shadow-xl backdrop-blur"
 									style:border-color={`${item.color}44`}
-									style:z-index="20"
+									style:z-index="50"
 									style:top={item.side === 'above' ? 'calc(100% + 8px)' : 'calc(100% + 8px)'}
 								>
 									<h3 class="font-serif text-base font-semibold text-stone-100">
