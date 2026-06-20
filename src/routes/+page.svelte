@@ -340,7 +340,7 @@
 					<p class="text-xs font-medium tracking-[0.28em] text-amber-200 uppercase">
 						Museum timeline
 					</p>
-					<h1 class="text-2xl font-semibold text-stone-50 sm:text-3xl">
+					<h1 class="text-2xl font-semibold text-stone-50 sm:text-3xl  my-4">
 						Western European Art Timeline
 					</h1>
 					<p class="text-xs text-stone-400">
@@ -416,32 +416,22 @@
 					style:width={`${timelineWidth}px`}
 				>
 					{#each periodBands as period (period.id)}
+						{@const isActive = activePeriodId === period.id}
 						<div
-							class="absolute top-0 h-full rounded-[1.5rem]"
+							class="absolute top-0 h-full overflow-hidden rounded-[1.5rem] pt-3"
 							style:left={`${period.left}px`}
 							style:width={`${period.width}px`}
 							style:background={`linear-gradient(to bottom, ${period.color}11, ${period.lightColor}08)`}
-							aria-hidden="true"
-						></div>
-					{/each}
-
-					<div
-						class="absolute top-4 left-0 flex h-12 w-full items-end gap-0 overflow-hidden px-3"
-						aria-hidden="true"
-					>
-						{#each periodBands as period (period.id)}
-							{@const isActive = activePeriodId === period.id}
+						>
 							<div
-								class="shrink-0 truncate rounded-full px-3 py-1 text-[0.65rem] font-semibold uppercase transition-all duration-300"
-								style:left={`${period.left}px`}
-								style:width={`${period.width}px`}
+								class="truncate rounded-full px-3 py-1 text-[0.65rem] font-semibold uppercase transition-all duration-300"
 								style:background-color={isActive ? `${period.color}33` : 'transparent'}
 								style:color={isActive ? period.lightColor : '#78716c'}
 							>
 								{period.name} · {period.startYear}–{period.endYear}
 							</div>
-						{/each}
-					</div>
+						</div>
+					{/each}
 
 					<div
 						class="absolute top-1/2 h-px rounded-full bg-stone-700"
