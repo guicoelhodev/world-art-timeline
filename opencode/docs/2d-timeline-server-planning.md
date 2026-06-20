@@ -46,8 +46,8 @@ Do not generate local JSON yet. A generated JSON/data cache phase can be added l
 1. User opens `/`.
 2. Server loads curated timeline seeds.
 3. Server enriches artists with Wikipedia data.
-4. Page renders a horizontal art-history timeline.
-5. User filters by period, movement, or author name.
+4. Page renders one continuous horizontal art-history timeline.
+5. User jumps to a period or movement, or filters visible artists by author name.
 6. User clicks an artist avatar/card.
 7. Browser navigates to `/room?author=AUTHOR_NAME`.
 
@@ -170,23 +170,25 @@ type TimelineData = {
 };
 ```
 
-## Filters
+## Navigation And Filters
 
-First-pass filters:
+First-pass controls:
 
-- Period select.
-- Movement select, scoped by selected period when applicable.
+- Period select for smooth horizontal navigation.
+- Movement select for smooth horizontal navigation.
 - Author text search.
 
-Filtering should happen client-side after the server returns normalized timeline data. This keeps interactions instant and avoids repeated server calls while the user explores.
+Author filtering should happen client-side after the server returns normalized timeline data. This keeps interactions instant and avoids repeated server calls while the user explores.
 
-Filter behavior:
+Navigation/filter behavior:
 
 - Empty filters show all periods and artists.
-- Selecting a period hides unrelated periods.
-- Selecting a movement hides unrelated movements.
+- Selecting a period does not hide unrelated periods; it scrolls smoothly to that period on the continuous timeline.
+- Selecting a movement does not hide unrelated movements; it scrolls smoothly to that movement on the continuous timeline.
+- `All periods` and `All movements` scroll back toward the beginning of the timeline.
 - Author search matches artist names case-insensitively.
-- If a period remains visible but has no matching artists, either hide it or show a compact empty state. Prefer hiding empty periods for the MVP.
+- Author search is the only control that removes artist cards from the visible timeline.
+- If author search removes all artists, show a compact empty state.
 
 ## Loading And Performance
 
@@ -208,9 +210,16 @@ If the initial artist count grows beyond roughly 100 artists, revisit rendering 
 
 - Timeline must remain horizontal on all screen sizes.
 - On mobile, use horizontal overflow instead of stacking vertically.
-- Periods should appear as large chronological lanes or sections.
-- Movements can appear as nested bands or grouped clusters inside each period.
-- Artist avatars should be compact, readable, and keyboard-accessible.
+- The main visual should be a single continuous horizontal line, not independent period cards.
+- Artist position on the x-axis should be based on `birthYear` when available.
+- If an artist is missing `birthYear`, fall back to movement start/end or the period midpoint.
+- Movements should visually affect the timeline line, for example through colored segments or accents.
+- Periods should appear as contextual labels/bands along the axis, not as the primary card layout.
+- Artist avatars should be compact, readable, keyboard-accessible, and placed near their timeline point.
+- Artists close in time can form compact bubble/grid clusters around the same timeline area.
+- Period and movement controls should use smooth horizontal scroll behavior instead of filtering timeline content.
+- Vertical mouse wheel should translate into horizontal scroll only when the cursor is over the timeline region.
+- Header should be sticky/fixed and compact, containing only the title, a short message, filters, and count.
 - Avatar image should use `loading="lazy"`, explicit dimensions, and `alt` text.
 - Missing portraits should render initials or a neutral silhouette fallback.
 - Do not rely on hover-only interactions.
@@ -232,10 +241,14 @@ Optional components after the first pass:
 
 ## Acceptance Criteria
 
-- `/` renders a horizontal timeline from server-loaded normalized data.
+- `/` renders a continuous horizontal timeline from server-loaded normalized data.
 - Periods are chronological.
-- Artists are grouped under periods and movements.
-- Filters work for period, movement, and author name.
+- Artists are positioned by birth year on the timeline.
+- Movements are represented visually through colored line segments or accents.
+- Periods appear as contextual chronological labels/bands.
+- Period and movement controls scroll smoothly to their target timeline locations.
+- Author search filters visible artist cards by name.
+- Mouse wheel over the timeline scrolls horizontally.
 - Artist thumbnails are small and lazy-loaded.
 - Missing portraits have fallbacks.
 - Clicking an artist navigates to `/room?author=AUTHOR_NAME`.
