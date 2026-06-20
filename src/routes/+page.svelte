@@ -506,7 +506,7 @@
 								<div
 									class="absolute left-1/2 w-44 -translate-x-1/2 rounded-xl border border-stone-800 bg-stone-900/95 p-3 text-center shadow-xl backdrop-blur"
 									style:border-color={`${item.color}44`}
-									style:z-index="50"
+									style:z-index="20"
 									style:top={item.side === 'above' ? 'calc(100% + 8px)' : 'calc(100% + 8px)'}
 								>
 									<h3 class="font-serif text-base font-semibold text-stone-100">
